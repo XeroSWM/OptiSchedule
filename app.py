@@ -226,7 +226,7 @@ elif menu == "🚀 Generar Horario":
     
     st.write("")
     col_opt, col_check = st.columns([1, 2])
-    modo_flex = col_check.checkbox("Modo Flexible (Permitir cruces leves)", value=False)
+    
     
     if col_opt.button("✨ Optimizar Ahora"):
         with st.spinner("Se está calculando la mejor distribución..."):
@@ -237,7 +237,7 @@ elif menu == "🚀 Generar Horario":
                 st.session_state['aulas'], 
                 carrera_activa, 
                 slots_ocupados=bloqueos_set,
-                ignorar_errores=modo_flex
+            
             )
             
             if df_nuevo is not None:
