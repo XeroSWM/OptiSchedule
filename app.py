@@ -8,7 +8,6 @@ from funciones import (
     confirmar_paralelo
 )
 from motor import ejecutar_optimizacion
-# --- IMPORTACIÓN ACTUALIZADA ---
 from reportes import generar_pdf_horario, generar_excel_inteligente 
 
 # 1. Configuración Inicial
@@ -171,13 +170,20 @@ elif menu == "📚 Malla":
                 if c2.button("Paralelo", key=f"dup_{uid}"): abrir_modal_paralelo(uid); st.rerun()
                 if c3.button("Borrar", key=f"del_m_{uid}"): eliminar_item('materias', idx_real)
                 
-                c4, c5, c6, c7 = st.columns(4)
+                # --- CAMBIO PRINCIPAL AQUÍ (Agregamos columna Alumnos c8) ---
+                c4, c5, c6, c7, c8 = st.columns([1, 1, 2, 1, 1]) 
+                
                 st.session_state['materias'][idx_real]['semestre'] = c4.number_input("Sem", value=sem_materia, key=f"sem_{uid}")
                 st.session_state['materias'][idx_real]['horas'] = c5.number_input("Hrs", value=int(m.get('horas', 4)), key=f"hm_{uid}")
+                
                 did = m.get('docente_id', 0)
                 idx_p = list(ing_map.keys()).index(did) if did in ing_map else 0
                 st.session_state['materias'][idx_real]['docente_id'] = c6.selectbox("Prof", list(ing_map.keys()), format_func=lambda x: ing_map[x], index=idx_p, key=f"pm_{uid}")
+                
                 st.session_state['materias'][idx_real]['req_lab'] = c7.selectbox("Lab?", ["NO", "SI"], index=1 if m.get('req_lab') == "SI" else 0, key=f"lm_{uid}")
+                
+                # Campo Editable de Alumnos
+                st.session_state['materias'][idx_real]['alumnos'] = c8.number_input("Alum", value=int(m.get('alumnos', 35)), step=5, key=f"alum_{uid}")
 
 elif menu == "🏫 Aulas":
     st.title("Infraestructura")
@@ -220,7 +226,7 @@ elif menu == "🚀 Generar Horario":
     
     st.write("")
     col_opt, col_check = st.columns([1, 2])
-    
+    modo_flex = col_check.checkbox("Modo Flexible (Permitir cruces leves)", value=False)
     
     if col_opt.button("✨ Optimizar Ahora"):
         with st.spinner("Se está calculando la mejor distribución..."):
@@ -231,7 +237,7 @@ elif menu == "🚀 Generar Horario":
                 st.session_state['aulas'], 
                 carrera_activa, 
                 slots_ocupados=bloqueos_set,
-                
+                ignorar_errores=modo_flex
             )
             
             if df_nuevo is not None:
